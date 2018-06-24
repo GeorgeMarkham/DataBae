@@ -21,12 +21,18 @@ var upgrader = websocket.Upgrader{
 }
 
 func dbHandler(res http.ResponseWriter, req *http.Request) {
+	//Grab Database name from the url
 	var dbName = req.URL.Path[1:]
+
+	//Get connection from the websocket uprader
 	conn, err := upgrader.Upgrade(res, req, nil)
+
+	//If there's an error print it to the console
 	if err != nil {
 		log.Println(err)
 		return
 	}
+	//Check that a database name has been entered
 	if len(dbName) > 0 {
 		for {
 
