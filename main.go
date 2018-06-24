@@ -77,8 +77,11 @@ func dbHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+
 	//Run the http handler concurrently using goroutine
 	go http.HandleFunc("/", dbHandler)
+
 	//Fatal is equivalent to Print() followed by a call to os.Exit(1).
 	log.Fatal(http.ListenAndServe(":8080", nil))
+
 }
