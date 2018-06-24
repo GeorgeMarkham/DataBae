@@ -29,30 +29,50 @@ func dbHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	if len(dbName) > 0 {
 		for {
-			messageType, msgBytes, err := conn.ReadMessage()
+
+			//Read in the message
+			messageType, msgBytes, err := conn.ReadMessage() //messageType = the type of message, string, close etc... ~ msgBytes = data stored as uint8[] ~ err = any errors
+
+			//If there are any errors print them:
 			if err != nil {
 				log.Println(err)
 			}
-			log.Printf("Message from %s: %s", conn.RemoteAddr(), string(msgBytes))
-			if err := conn.WriteMessage(messageType, msgBytes); err != nil {
-				log.Println(err)
-				return
-			}
-			if messageType == websocket.CloseMessage {
-				log.Printf("Connection closed by client: %s", conn.RemoteAddr())
+
+			//If there are no errors print the mesage and the client address to the console
+			if err == nil {
+				log.Printf("Message from %s: %s", conn.RemoteAddr(), string(msgBytes))
+
+				//Return the data to the client
+				if err := conn.WriteMessage(messageType, msgBytes); err != nil {
+					log.Println(err)
+					return
+				}
+
+				//Check if the connection is being closed by the cient and then honour the close request
+				if messageType == websocket.CloseMessage {
+					log.Printf("Connection closed by client: %s", conn.RemoteAddr())
+					conn.Close()
+				}
 			}
 		}
 
 	} else {
+		//Create the error message as a byte array
 		errMsg := []byte("No db specified")
+
+		//Write the error message to the client & check for errors
 		if err := conn.WriteMessage(1, errMsg); err != nil {
+			//If there is an error then log it to the console
 			log.Println(err)
 		}
+		//Close the connection because the client has not specified a database endpoint
 		conn.Close()
 	}
 }
 
 func main() {
+	//Run the http handler concurrently using goroutine
 	go http.HandleFunc("/", dbHandler)
+	//Fatal is equivalent to Print() followed by a call to os.Exit(1).
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
