@@ -1,4 +1,4 @@
-package databae
+package main
 
 import (
 	"log"
@@ -10,7 +10,7 @@ import (
 //Define message type
 type message struct {
 	Method string
-	Data   Record
+	Data   string
 }
 
 //Define Websocket upgrader
