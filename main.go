@@ -9,9 +9,8 @@ import (
 
 //Define message type
 type message struct {
-	Code    int
-	Command string
-	Options string
+	Method string
+	Data   Record
 }
 
 //Define Websocket upgrader
@@ -37,7 +36,11 @@ func dbHandler(res http.ResponseWriter, req *http.Request) {
 		for {
 
 			//Read in the message
-			messageType, msgBytes, err := conn.ReadMessage() //messageType = the type of message, string, close etc... ~ msgBytes = data stored as uint8[] ~ err = any errors
+			//messageType, msgBytes, err := conn.ReadMessage() //messageType = the type of message, string, close etc... ~ msgBytes = data stored as uint8[] ~ err = any errors
+
+			msg := message{}
+
+			err := conn.ReadJSON(&msg)
 
 			//If there are any errors print them:
 			if err != nil {
@@ -46,19 +49,7 @@ func dbHandler(res http.ResponseWriter, req *http.Request) {
 
 			//If there are no errors print the mesage and the client address to the console
 			if err == nil {
-				log.Printf("Message from %s: %s", conn.RemoteAddr(), string(msgBytes))
 
-				//Return the data to the client
-				if err := conn.WriteMessage(messageType, msgBytes); err != nil {
-					log.Println(err)
-					return
-				}
-
-				//Check if the connection is being closed by the cient and then honour the close request
-				if messageType == websocket.CloseMessage {
-					log.Printf("Connection closed by client: %s", conn.RemoteAddr())
-					conn.Close()
-				}
 			}
 		}
 
